@@ -26,19 +26,25 @@ if (process.env.NODE_ENV === "development") {
 export const auth = betterAuth({
   database: mongodbAdapter(await clientPromise.then(c => c.db(process.env.MONGODB_DB))),
   secret: process.env.BETTER_AUTH_SECRET,
-  emailAndPassword: {
-    enabled: true,
-  },
+  
+
+  baseURL: "http://localhost:3000", 
+  trustedOrigins: [
+    "http://localhost:3000", 
+    "http://localhost:5000"  
+  ],
+
+  emailAndPassword: { enabled: true },
+  
   user: {
     additionalFields: {
       role: {
         type: "string",
-        defaultValue: "collector",
-        input: true, // <-- Eita true kor. Nahole user role dite parbe na
+        defaultValue: "user",
+        input: false, // <-- true থেকে false করো। নাহলে যেকেউ admin বানায় ফেলতে পারবে
       },
     },
   },
-  session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-  },
+  
+  session: { expiresIn: 60 * 60 * 24 * 7 },
 });

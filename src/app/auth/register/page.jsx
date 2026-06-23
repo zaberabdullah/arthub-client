@@ -52,18 +52,19 @@ export default function RegisterPage() {
     setError(""); setStep(2);
   };
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setError(""); setSuccess("");
+ const handleRegister = async (e) => {
+  e.preventDefault();
+  console.log("Register clicked!", { email, password, fullName, role }); // ← add koro
+  setError(""); setSuccess("");
     if (!fullName.trim()) return setError("Full name is required.");
     if (password.length < 6) return setError("Password must be at least 6 characters.");
     if (password !== confirm) return setError("Passwords do not match.");
 
     setIsLoading(true);
     try {
-      const {error: authError } = await signUp.email({
-        email, password, name: fullName, data: { role },
-      });
+     const {error: authError } = await signUp.email({
+  email, password, name: fullName, role,
+});
       if (authError) { setError(authError.message || "Registration failed. Please try again."); return; }
       setSuccess("Account created! Redirecting…");
       router.push("/");
