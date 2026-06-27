@@ -13,21 +13,35 @@ export default function SalesHistoryPage() {
 
   useEffect(() => {
     if (isPending) return;
-    if (!session) { router.push("/auth/login"); return; }
+    if (!session) {
+      router.push("/auth/login");
+      return;
+    }
     fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/my-sales`, { credentials: "include" })
-      .then(r => r.json()).then(d => setSales(Array.isArray(d) ? d : []))
-      .catch(() => {}).finally(() => setLoading(false));
+      .then((r) => r.json())
+      .then((d) => setSales(Array.isArray(d) ? d : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [session, isPending]);
 
   const totalRevenue = sales.reduce((sum, s) => sum + (s.amount || 0), 0);
 
-  if (loading) return <div className="p-6 space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-zinc-100 rounded-xl animate-pulse" />)}</div>;
+  if (loading)
+    return (
+      <div className="p-6 space-y-3">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="h-14 bg-zinc-100 rounded-xl animate-pulse" />
+        ))}
+      </div>
+    );
 
   return (
     <div className="max-w-5xl mx-auto p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Sales History</h1>
-        <p className="text-zinc-500 text-sm mt-1">{sales.length} sales · Total earned: <span className="text-violet-600 font-semibold">${totalRevenue}</span></p>
+        <p className="text-zinc-500 text-sm mt-1">
+          {sales.length} sales · Total earned: <span className="text-violet-600 font-semibold">${totalRevenue}</span>
+        </p>
       </div>
 
       {/* Stats */}
@@ -62,11 +76,22 @@ export default function SalesHistoryPage() {
               </thead>
               <tbody>
                 {sales.map((s) => (
-                  <tr key={s._id} className="border-b border-zinc-50 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-900/50">
+                  <tr
+                    key={s._id}
+                    className="border-b border-zinc-50 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
+                  >
                     <td className="px-5 py-4 font-medium text-zinc-900 dark:text-zinc-100">{s.artworkTitle || "—"}</td>
                     <td className="px-5 py-4 text-zinc-500">{s.buyerName || "—"}</td>
                     <td className="px-5 py-4 font-semibold text-violet-600">${s.amount || 0}</td>
-                    <td className="px-5 py-4 text-zinc-500">{s.createdAt ? new Date(s.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "—"}</td>
+                    <td className="px-5 py-4 text-zinc-500">
+                      {s.createdAt
+                        ? new Date(s.createdAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })
+                        : "—"}
+                    </td>
                   </tr>
                 ))}
               </tbody>

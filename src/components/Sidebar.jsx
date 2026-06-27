@@ -25,7 +25,7 @@ const menuByRole = {
   admin: [
     { label: "Users", href: "/dashboard/admin", icon: <Users size={18} /> },
     { label: "All Artworks", href: "/dashboard/admin/artworks", icon: <Layers size={18} /> },
-    { label: "Transactions", href: "/dashboard/admin/transactions", icon: <Receipt size={18} /> },
+    { label: "transactions", href: "/dashboard/admin/transactions", icon: <Receipt size={18} /> },
     { label: "Analytics", href: "/dashboard/admin/analytics", icon: <BarChart3 size={18} /> },
   ],
 };

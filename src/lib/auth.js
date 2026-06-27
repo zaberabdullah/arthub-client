@@ -27,7 +27,6 @@ export const auth = betterAuth({
   database: mongodbAdapter(await clientPromise.then(c => c.db(process.env.MONGODB_DB))),
   secret: process.env.BETTER_AUTH_SECRET,
   
-
   baseURL: "http://localhost:3000", 
   trustedOrigins: [
     "http://localhost:3000", 
@@ -35,14 +34,48 @@ export const auth = betterAuth({
   ],
 
   emailAndPassword: { enabled: true },
+
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    },
+  },
   
   user: {
     additionalFields: {
       role: {
         type: "string",
-        defaultValue: "user",
-        input: false, // <-- true থেকে false করো। নাহলে যেকেউ admin বানায় ফেলতে পারবে
+        defaultValue: "user", // Default user
+        input: false, 
       },
+      pendingRole: {
+        type: "string",
+        defaultValue: null,
+        input: false,
+      },
+    },
+  },
+
+  // ✅ Google login এর আগে role capture করার জন্য
+  callbacks: {
+    async signIn({ user, account }) {
+      // Google দিয়ে login করলে pendingRole check করো
+      if (account?.provider === "google" && user.pendingRole) {
+        // Role update করো
+        const client = await clientPromise;
+        const db = client.db(process.env.MONGODB_DB);
+        await db.collection("user").updateOne(
+          { _id: user.id },
+          { 
+            $set: { 
+              role: user.pendingRole,
+              pendingRole: null 
+            } 
+          }
+        );
+      }
+      return true;
     },
   },
   

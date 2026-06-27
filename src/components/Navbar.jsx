@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Button } from "@heroui/react";
 import { useSession, signOut } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import UserMenu from "@/components/UserMenu";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const pathname = usePathname();
   const { data: session } = useSession();
   const user = session?.user;
@@ -35,72 +36,71 @@ export default function Navbar() {
 
   const dashboardLinks = {
     user: [
-      { label: "Dashboard", href: "/dashboard" },
+      { label: "Dashboard", href: "/dashboard/user" },
       { label: "My Purchases", href: "/dashboard/user/purchases" },
+      { label: "My Collection", href: "/dashboard/user/collection" },
+      { label: "Subscription", href: "/dashboard/user/subscription" },
+      { label: "Profile", href: "/dashboard/user/profile" },
     ],
     artist: [
       { label: "Dashboard", href: "/dashboard/artist" },
       { label: "Add Artwork", href: "/dashboard/artist/add" },
+      { label: "Sales History", href: "/dashboard/artist/sales" },
+      { label: "Profile", href: "/dashboard/artist/profile" },
     ],
     admin: [
-      { label: "Dashboard", href: "/dashboard/admin" },
-      { label: "Manage Users", href: "/dashboard/admin/users" },
+      { label: "Users", href: "/dashboard/admin" },
+      { label: "All Artworks", href: "/dashboard/admin/artworks" },
+      { label: "transactions", href: "/dashboard/admin/transactions" },
+      { label: "Analytics", href: "/dashboard/admin/analytics" },
     ],
   };
 
   const currentDashboardLinks = dashboardLinks[userRole] || dashboardLinks.user;
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-rose-100 bg-white/80 backdrop-blur-xl">
+    <nav className="sticky top-0 z-50 border-b border-violet-100 bg-white/80 backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-rose-600 to-indigo-600 bg-clip-text text-transparent">
+          <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-purple-600 rounded-xl flex items-center justify-center">
+            <span className="text-white font-bold text-xl">A</span>
+          </div>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
             ArtHub
           </h1>
         </Link>
 
-        {/* DESKTOP NAV */}
+        {/* DESKTOP NAV LINKS */}
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
-            <Link key={link.href} href={link.href} className={`text-sm font-medium transition-colors ${pathname === link.href ? "text-rose-600" : "text-gray-600 hover:text-rose-600"}`}>
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`text-sm font-medium transition-colors ${
+                pathname === link.href ? "text-violet-600" : "text-gray-600 hover:text-violet-600"
+              }`}
+            >
               {link.label}
             </Link>
           ))}
-
-          {isLoggedIn && (
-            <div className="relative">
-              <button 
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)} 
-                className="text-sm font-medium text-gray-600 hover:text-rose-600 transition-colors"
-              >
-                Dashboard
-              </button>
-              {isDropdownOpen && (
-                <div className="absolute right-0 mt-3 w-48 bg-white border border-rose-100 rounded-2xl shadow-xl py-2 z-50">
-                  {currentDashboardLinks.map((link) => (
-                    <Link key={link.href} href={link.href} onClick={() => setIsDropdownOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-rose-50 transition-colors">
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
-        {/* AUTH BUTTONS */}
+        {/* DESKTOP RIGHT SIDE */}
         <div className="hidden md:flex items-center gap-3">
           {isLoggedIn ? (
-            <Button onPress={handleLogout} variant="flat" color="danger" size="sm" className="rounded-full px-6">Logout</Button>
+            <UserMenu />
           ) : (
             <div className="flex gap-2">
-              <Link href="/auth/login" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-rose-600 rounded-full transition-colors">
-                Login
+              <Link href="/auth/login">
+                <Button variant="light" className="font-medium">
+                  Login
+                </Button>
               </Link>
-              <Link href="/auth/register" className="bg-gradient-to-r from-rose-500 to-indigo-600 text-white px-6 py-2 text-sm font-medium rounded-full shadow-lg hover:shadow-xl transition-all">
-                Sign Up
+              <Link href="/auth/register">
+                <Button className="bg-gradient-to-r from-violet-600 to-purple-600 text-white font-medium">
+                  Sign Up
+                </Button>
               </Link>
             </div>
           )}
@@ -108,30 +108,67 @@ export default function Navbar() {
 
         {/* MOBILE TOGGLE */}
         <Button isIconOnly variant="light" onPress={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" /></svg>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {isMenuOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+            )}
+          </svg>
         </Button>
       </div>
 
       {/* MOBILE MENU */}
       {isMenuOpen && (
-        <div className="md:hidden p-4 bg-white border-t border-rose-100 flex flex-col gap-4">
+        <div className="md:hidden p-4 bg-white border-t border-violet-100 flex flex-col gap-2">
           {navLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="text-gray-700 font-medium" onClick={() => setIsMenuOpen(false)}>{link.label}</Link>
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`px-4 py-3 rounded-lg font-medium ${
+                pathname === link.href ? "bg-violet-50 text-violet-600" : "text-gray-700 hover:bg-gray-50"
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              {link.label}
+            </Link>
           ))}
-          {isLoggedIn && currentDashboardLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="text-rose-600 font-medium" onClick={() => setIsMenuOpen(false)}>{link.label}</Link>
-          ))}
-          
-          <div className="flex flex-col gap-2 pt-2">
-            {isLoggedIn ? (
-              <Button onPress={handleLogout} color="danger" variant="flat" className="w-full">Logout</Button>
-            ) : (
-              <>
-                <Link href="/auth/login" className="w-full text-center py-3 border border-gray-200 rounded-xl font-medium">Login</Link>
-                <Link href="/auth/register" className="w-full text-center py-3 bg-rose-500 text-white rounded-xl font-medium">Sign Up</Link>
-              </>
-            )}
-          </div>
+
+          {isLoggedIn && (
+            <>
+              <div className="h-px bg-gray-200 my-2" />
+              <p className="px-4 text-xs font-semibold text-gray-400 uppercase">Dashboard</p>
+              {currentDashboardLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`px-4 py-3 rounded-lg ${
+                    pathname === link.href ? "bg-violet-50 text-violet-600" : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <div className="h-px bg-gray-200 my-2" />
+              <Button onPress={handleLogout} color="danger" variant="flat" className="w-full">
+                Logout
+              </Button>
+            </>
+          )}
+
+          {!isLoggedIn && (
+            <div className="flex flex-col gap-2 pt-2">
+              <Link href="/auth/login" className="w-full">
+                <Button variant="bordered" className="w-full">
+                  Login
+                </Button>
+              </Link>
+              <Link href="/auth/register" className="w-full">
+                <Button className="w-full bg-gradient-to-r from-violet-600 to-purple-600 text-white">Sign Up</Button>
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </nav>

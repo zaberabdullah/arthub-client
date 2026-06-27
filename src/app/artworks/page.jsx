@@ -179,7 +179,7 @@ export default function BrowseArtworks() {
 
           {totalPages > 1 && (
             <div className="flex justify-center">
-              <Pagination total={totalPages} page={page} onChange={setPage} showControls color="primary" />
+              <Pagination total={totalPages} page={page} onChange={setPage} color="primary" />
             </div>
           )}
         </>

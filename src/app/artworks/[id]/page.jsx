@@ -24,15 +24,19 @@ export default function ArtworkDetailsPage() {
 
   const user = session?.user;
   const isOwner = user?.id === artwork?.artistId;
-  const isLoggedIn = !!user;
+  const isLoggedIn =!!user;
+  const isSold = artwork?.isSold || artwork?.status === "sold";
 
   useEffect(() => {
     fetchArtwork();
     fetchComments();
   }, [id]);
 
+  // ✅ User login korle ba artwork load hoile check koro
   useEffect(() => {
-    if (session && artwork) checkCanComment();
+    if (session && artwork) {
+      checkCanComment();
+    }
   }, [session, artwork]);
 
   const fetchArtwork = async () => {
@@ -57,35 +61,36 @@ export default function ArtworkDetailsPage() {
 
   const checkCanComment = async () => {
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/check/${id}`,
-        { credentials: "include" }
-      );
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/check/${id}`, {
+        credentials: "include",
+      });
       if (res.ok) {
         const data = await res.json();
         setCanComment(data.hasPurchased);
       }
-    } catch {}
+    } catch (err) {
+      console.error("Check comment error:", err);
+    }
   };
 
   const handleBuyNow = async () => {
-    if (!isLoggedIn) { router.push("/auth/login"); return; }
-    if (artwork.isSold || isOwner) return;
+    if (!isLoggedIn) {
+      router.push("/auth/login");
+      return;
+    }
+    if (isSold || isOwner) return;
     setBuying(true);
-    setError(""); setSuccess("");
+    setError("");
+    setSuccess("");
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/create-checkout-session`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ artworkId: id }),
-        }
-      );
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/create-checkout-session`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ artworkId: id }),
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Purchase failed");
-      // Stripe checkout URL e redirect
       window.location.href = data.url;
     } catch (err) {
       setError(err.message);
@@ -98,10 +103,10 @@ export default function ArtworkDetailsPage() {
     if (!confirm("Are you sure you want to delete this artwork?")) return;
     setDeleting(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks/${id}`,
-        { method: "DELETE", credentials: "include" }
-      );
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Delete failed");
       router.push("/dashboard/artist");
     } catch (err) {
@@ -114,17 +119,18 @@ export default function ArtworkDetailsPage() {
   const handlePostComment = async () => {
     if (!comment.trim()) return;
     setPostingComment(true);
-    setError(""); setSuccess("");
+    setError("");
+    setSuccess("");
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/comments`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ artworkId: id, comment }),
-        }
-      );
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ 
+          artworkId: id, 
+          comment: comment
+        }),
+      });
       if (!res.ok) throw new Error("Failed to post comment");
       setSuccess("Comment posted!");
       setComment("");
@@ -136,7 +142,6 @@ export default function ArtworkDetailsPage() {
     }
   };
 
-  // ── Loading skeleton ──
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto py-8 px-4">
@@ -159,8 +164,6 @@ export default function ArtworkDetailsPage() {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <div className="max-w-6xl mx-auto py-8 px-4">
-
-        {/* ── Error / Success ── */}
         {error && (
           <div className="p-3.5 text-xs font-medium rounded-xl bg-red-100/60 text-red-700 border border-red-200 mb-6">
             <span className="font-semibold">Error:</span> {error}
@@ -172,30 +175,20 @@ export default function ArtworkDetailsPage() {
           </div>
         )}
 
-        {/* ── Main content ── */}
         <div className="grid md:grid-cols-2 gap-10 mb-12">
-
-          {/* Image */}
           <div className="relative">
-            <img
-              src={artwork.imageUrl}
-              alt={artwork.title}
-              className="w-full rounded-2xl shadow-xl object-cover"
-            />
-            {artwork.isSold && (
+            <img src={artwork.imageUrl} alt={artwork.title} className="w-full rounded-2xl shadow-xl object-cover" />
+            {isSold && (
               <div className="absolute top-4 right-4 bg-red-500 text-white text-sm font-bold px-4 py-1.5 rounded-full shadow">
                 SOLD
               </div>
             )}
           </div>
 
-          {/* Details */}
           <div className="flex flex-col gap-5">
             <div>
               <div className="flex items-start justify-between gap-4 mb-2">
-                <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-                  {artwork.title}
-                </h1>
+                <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">{artwork.title}</h1>
                 <span className="flex-shrink-0 text-xs font-medium bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 px-3 py-1 rounded-full">
                   {artwork.category}
                 </span>
@@ -209,9 +202,7 @@ export default function ArtworkDetailsPage() {
 
             <div>
               <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Description</h3>
-              <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed text-sm">
-                {artwork.description}
-              </p>
+              <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed text-sm">{artwork.description}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -222,15 +213,18 @@ export default function ArtworkDetailsPage() {
               <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-100 dark:border-zinc-800">
                 <p className="text-xs text-zinc-400 mb-1">Posted</p>
                 <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  {new Date(artwork.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                  {new Date(artwork.createdAt).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
                 </p>
               </div>
             </div>
 
             <div className="h-px bg-zinc-200 dark:bg-zinc-800" />
 
-            {/* Action buttons */}
-            {isOwner ? (
+            {isOwner? (
               <div className="flex gap-3">
                 <Link href={`/dashboard/artist/edit/${id}`} className="flex-1">
                   <Button color="primary" variant="flat" className="w-full font-semibold rounded-xl" size="lg">
@@ -254,15 +248,17 @@ export default function ArtworkDetailsPage() {
                   color="primary"
                   size="lg"
                   className="w-full font-semibold rounded-xl"
-                  isDisabled={artwork.isSold || !isLoggedIn}
+                  isDisabled={isSold ||!isLoggedIn}
                   isLoading={buying}
                   onPress={handleBuyNow}
                 >
-                  {artwork.isSold ? "Sold Out" : "Buy Now"}
+                  {isSold? "Sold Out" : "Buy Now"}
                 </Button>
                 {!isLoggedIn && (
                   <p className="text-sm text-zinc-500 text-center">
-                    <Link href="/auth/login" className="text-violet-600 hover:underline font-medium">Login</Link>{" "}
+                    <Link href="/auth/login" className="text-violet-600 hover:underline font-medium">
+                      Login
+                    </Link>{" "}
                     to purchase this artwork
                   </p>
                 )}
@@ -271,13 +267,9 @@ export default function ArtworkDetailsPage() {
           </div>
         </div>
 
-        {/* ── Comments Section ── */}
         <Card className="p-6 border border-zinc-200 dark:border-zinc-800">
-          <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">
-            Comments ({comments.length})
-          </h2>
+          <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">Comments ({comments.length})</h2>
 
-          {/* Comment form — only for buyers */}
           {canComment && (
             <div className="mb-6 space-y-3">
               <textarea
@@ -299,40 +291,39 @@ export default function ArtworkDetailsPage() {
             </div>
           )}
 
-          {/* Comment hints */}
           {!isLoggedIn && (
             <p className="text-zinc-500 text-sm mb-6">
-              <Link href="/auth/login" className="text-violet-600 hover:underline font-medium">Login</Link>{" "}
+              <Link href="/auth/login" className="text-violet-600 hover:underline font-medium">
+                Login
+              </Link>{" "}
               and purchase this artwork to leave a comment
             </p>
           )}
-          {isLoggedIn && !canComment && !isOwner && (
+          {isLoggedIn &&!canComment &&!isOwner && (
             <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl px-4 py-3 mb-6">
-              <p className="text-zinc-500 text-sm">
-                🔒 Only buyers who purchased this artwork can comment
-              </p>
+              <p className="text-zinc-500 text-sm">🔒 Only buyers who purchased this artwork can comment</p>
             </div>
           )}
 
-          {/* Comments list */}
           <div className="space-y-4">
-            {comments.length === 0 ? (
+            {comments.length === 0? (
               <div className="text-center py-10">
                 <p className="text-3xl mb-2">💬</p>
                 <p className="text-zinc-400 text-sm">No comments yet</p>
               </div>
             ) : (
               comments.map((c) => (
-                <div key={c._id} className="flex gap-3 pb-4 border-b border-zinc-100 dark:border-zinc-800 last:border-0">
+                <div
+                  key={c._id}
+                  className="flex gap-3 pb-4 border-b border-zinc-100 dark:border-zinc-800 last:border-0"
+                >
                   <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center text-sm font-bold text-violet-600 flex-shrink-0">
                     {c.userName?.[0]?.toUpperCase() || "U"}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <p className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">{c.userName}</p>
-                      <p className="text-xs text-zinc-400">
-                        {new Date(c.createdAt).toLocaleDateString()}
-                      </p>
+                      <p className="text-xs text-zinc-400">{new Date(c.createdAt).toLocaleDateString()}</p>
                     </div>
                     <p className="text-zinc-700 dark:text-zinc-300 text-sm">{c.comment}</p>
                   </div>
@@ -341,7 +332,6 @@ export default function ArtworkDetailsPage() {
             )}
           </div>
         </Card>
-
       </div>
     </div>
   );
