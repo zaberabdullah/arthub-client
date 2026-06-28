@@ -15,11 +15,23 @@ export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
   
-  trustedOrigins: [
+   trustedOrigins: [
     "http://localhost:3000",
+    "http://localhost:5000",
     "https://arthub-client-three.vercel.app",
+    "https://arthub-server-mu.vercel.app",
   ],
-
+ advanced: {
+    crossSubdomainCookies: {
+      enabled: false,
+    },
+    defaultCookieAttributes: {
+      secure: true,
+      httpOnly: true,
+      sameSite: "none", // ← cross-origin request এর জন্য
+    },
+  },
+  
   emailAndPassword: { enabled: true },
 
   socialProviders: {
