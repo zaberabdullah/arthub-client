@@ -15,7 +15,7 @@ export default function DashboardLayout({ children }) {
       router.push("/auth/login");
       return;
     }
-    // Role based redirect
+
     const role = session.user?.role;
     const path = window.location.pathname;
 
@@ -26,6 +26,7 @@ export default function DashboardLayout({ children }) {
     }
   }, [session, isPending]);
 
+
   if (isPending) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -33,6 +34,8 @@ export default function DashboardLayout({ children }) {
       </div>
     );
   }
+
+  if (!session) return null; // ← redirect হওয়ার আগে blank দেখাবে
 
   return (
     <div className="flex min-h-screen bg-gray-50/50">
