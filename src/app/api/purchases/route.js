@@ -11,7 +11,7 @@ export async function GET(request) {
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
+console.log("Session user:", session.user);
     const client = new MongoClient(process.env.MONGODB_URI);
     await client.connect();
     const db = client.db(process.env.MONGODB_DB);
