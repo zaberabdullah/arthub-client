@@ -35,9 +35,13 @@ export default function DashboardLayout({ children }) {
     );
   }
 
-  if (!session) return null; // ← redirect হওয়ার আগে blank দেখাবে
-
-  return (
+  if (!session) return (
+  <div className="flex min-h-screen items-center justify-center">
+    <div className="w-8 h-8 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
+  
+return (
     <div className="flex min-h-screen bg-gray-50/50">
       <aside className="w-64 border-r border-rose-100 hidden md:block bg-white shadow-sm">
         <div className="p-6 text-xl font-bold text-rose-600">ArtHub</div>
