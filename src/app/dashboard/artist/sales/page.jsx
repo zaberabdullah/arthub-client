@@ -19,10 +19,11 @@ export default function SalesHistoryPage() {
       return;
     }
     authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/my-sales`)
-  .then((r) => r.json())
-  .then((d) => setSales(Array.isArray(d) ? d : []))
-  .catch(() => {})
-  .finally(() => setLoading(false));
+      .then((r) => r.json())
+      .then((d) => setSales(Array.isArray(d) ? d : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [session, isPending]);
 
   const totalRevenue = sales.reduce((sum, s) => sum + (s.amount || 0), 0);
 
@@ -44,7 +45,6 @@ export default function SalesHistoryPage() {
         </p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 gap-4 mb-6">
         <Card className="p-5 border border-zinc-200 dark:border-zinc-800">
           <p className="text-xs text-zinc-400 mb-1">Total Sales</p>
@@ -76,21 +76,12 @@ export default function SalesHistoryPage() {
               </thead>
               <tbody>
                 {sales.map((s) => (
-                  <tr
-                    key={s._id}
-                    className="border-b border-zinc-50 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
-                  >
+                  <tr key={s._id} className="border-b border-zinc-50 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-900/50">
                     <td className="px-5 py-4 font-medium text-zinc-900 dark:text-zinc-100">{s.artworkTitle || "—"}</td>
                     <td className="px-5 py-4 text-zinc-500">{s.buyerName || "—"}</td>
                     <td className="px-5 py-4 font-semibold text-violet-600">${s.amount || 0}</td>
                     <td className="px-5 py-4 text-zinc-500">
-                      {s.createdAt
-                        ? new Date(s.createdAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })
-                        : "—"}
+                      {s.createdAt ? new Date(s.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "—"}
                     </td>
                   </tr>
                 ))}
