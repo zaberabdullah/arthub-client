@@ -74,30 +74,35 @@ export default function ArtworkDetailsPage() {
   };
 
   const handleBuyNow = async () => {
-    if (!isLoggedIn) {
-      router.push("/auth/login");
-      return;
-    }
-    if (isSold || isOwner) return;
-    setBuying(true);
-    setError("");
-    setSuccess("");
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/create-checkout-session`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ artworkId: id }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Purchase failed");
-      window.location.href = data.url;
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setBuying(false);
-    }
-  };
+  if (!isLoggedIn) {
+    router.push("/auth/login");
+    return;
+  }
+  if (isSold || isOwner) return;
+  setBuying(true);
+  setError("");
+  try {
+    const sessionRes = await fetch("/api/auth/get-session");
+    const sessionData = await sessionRes.json();
+    const token = sessionData?.session?.token;
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/create-checkout-session`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({ artworkId: id }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Purchase failed");
+    window.location.href = data.url;
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setBuying(false);
+  }
+};
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this artwork?")) return;

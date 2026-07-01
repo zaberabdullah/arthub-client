@@ -38,7 +38,7 @@ export default function UserMenu() {
   const role = user?.role || "user";
   const links = dashboardLinks[role] || dashboardLinks.user;
 
-  // Close on outside click
+
   useEffect(() => {
     const handleClick = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
