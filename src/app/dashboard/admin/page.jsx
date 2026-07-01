@@ -1,6 +1,5 @@
 "use client";
 
-import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Card } from "@heroui/react";
@@ -8,31 +7,44 @@ import Link from "next/link";
 import { authFetch } from "@/lib/api";
 
 export default function AdminDashboard() {
-  const { data: session, isPending } = useSession();
+  const [session, setSession] = useState(null);
+  const [isPending, setIsPending] = useState(true);
   const router = useRouter();
   const [stats, setStats] = useState({ totalUsers: 0, totalArtists: 0, totalArtworks: 0, totalRevenue: 0 });
 
   useEffect(() => {
+    fetch("/api/auth/get-session")
+      .then(r => r.json())
+      .then(data => {
+        setSession(data);
+        setIsPending(false);
+      })
+      .catch(() => setIsPending(false));
+  }, []);
+
+  useEffect(() => {
     if (isPending) return;
-    if (!session || session.user?.role !== "admin") { 
-      router.push("/"); 
-      return; 
+    if (!session?.user) {
+      router.push("/auth/login");
+      return;
+    }
+    if (session.user.role !== "admin") {
+      router.push("/");
+      return;
     }
     fetchQuickStats();
   }, [session, isPending]);
 
   const fetchQuickStats = async () => {
     try {
-    const [usersRes, artworksRes, txRes] = await Promise.all([
-  authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users`),
-  fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks?limit=1`),
-  authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/all`),
-]);
-      
+      const [usersRes, artworksRes, txRes] = await Promise.all([
+        authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users`),
+        fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks?limit=1`),
+        authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/all`),
+      ]);
       const users = usersRes.ok ? await usersRes.json() : [];
       const artworksData = artworksRes.ok ? await artworksRes.json() : { total: 0 };
       const transactions = txRes.ok ? await txRes.json() : [];
-
       setStats({
         totalUsers: users.filter(u => u.role === "user").length,
         totalArtists: users.filter(u => u.role === "artist").length,
@@ -59,7 +71,6 @@ export default function AdminDashboard() {
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Admin Dashboard</h1>
         <p className="text-zinc-500 text-sm mt-1">Welcome back, {session?.user?.name}</p>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {quickLinks.map((link) => (
           <Link key={link.href} href={link.href}>

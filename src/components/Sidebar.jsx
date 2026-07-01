@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "@/lib/auth-client";
+
 import {
   LayoutDashboard, Palette, PlusCircle, BarChart3,
   ShoppingBag, Image, CreditCard, Users, Settings, Layers, Receipt,
@@ -30,9 +30,8 @@ const menuByRole = {
   ],
 };
 
-export default function Sidebar() {
+export default function Sidebar({ session }) {
   const pathname = usePathname();
-  const { data: session } = useSession();
   const role = session?.user?.role || "user";
   const menu = menuByRole[role] || menuByRole.user;
 

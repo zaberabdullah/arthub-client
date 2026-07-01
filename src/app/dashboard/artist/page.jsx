@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSession } from "@/lib/auth-client";
 import { Card, Button } from "@heroui/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authFetch } from "@/lib/api"; // ← add করো
 
 export default function ArtistDashboard() {
-  const { data: session, isPending } = useSession();
+  const [session, setSession] = useState(null);
+const [isPending, setIsPending] = useState(true);
   const router = useRouter();
   const [artworks, setArtworks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,9 +15,15 @@ export default function ArtistDashboard() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  useEffect(() => {
-    if (!isPending && !session) router.push("/auth/login");
-  }, [session, isPending, router]);
+useEffect(() => {
+  fetch("/api/auth/get-session")
+    .then(r => r.json())
+    .then(data => {
+      setSession(data);
+      setIsPending(false);
+    })
+    .catch(() => setIsPending(false));
+}, []);
 
   useEffect(() => {
     if (session) fetchMyArtworks();
@@ -26,7 +31,7 @@ export default function ArtistDashboard() {
 
   const fetchMyArtworks = async () => {
     try {
-      const res = await authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks/my/list`); // ← fix
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks/my/list`, { credentials: "include" });
       if (res.ok) setArtworks(await res.json());
     } catch (err) {
       console.error(err);
@@ -41,8 +46,9 @@ export default function ArtistDashboard() {
     setError("");
     setSuccess("");
     try {
-      const res = await authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks/${id}`, { // ← fix
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks/${id}`, {
         method: "DELETE",
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Delete failed.");
       setSuccess("Artwork deleted.");
