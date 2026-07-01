@@ -85,6 +85,8 @@ export default function ArtworkDetailsPage() {
     const sessionRes = await fetch("/api/auth/get-session");
     const sessionData = await sessionRes.json();
     const token = sessionData?.session?.token;
+    console.log("Session data:", sessionData);
+console.log("Token:", token);
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/create-checkout-session`, {
       method: "POST",
