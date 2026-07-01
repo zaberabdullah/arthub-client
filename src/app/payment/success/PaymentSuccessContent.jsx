@@ -22,26 +22,31 @@ export default function PaymentSuccessContent() {
     confirmPurchase();
   }, [sessionId]);
 
-  const confirmPurchase = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/confirm-purchase`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ sessionId }),
-      });
+ const confirmPurchase = async () => {
+  try {
+    const sessionRes = await fetch("/api/auth/get-session");
+    const sessionData = await sessionRes.json();
+    const token = sessionData?.session?.token;
 
-      if (!res.ok) throw new Error("Failed to confirm purchase");
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/confirm-purchase`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "x-session-token": token,
+      },
+      body: JSON.stringify({ sessionId }),
+    });
 
-      const data = await res.json();
-      setPurchase(data);
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (!res.ok) throw new Error("Failed to confirm purchase");
+    const data = await res.json();
+    setPurchase(data);
+  } catch (err) {
+    console.error(err);
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (loading) {
     return (
