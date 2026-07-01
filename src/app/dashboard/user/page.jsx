@@ -5,6 +5,8 @@ import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { Card, Button } from "@heroui/react";
 import Link from "next/link";
+import { authFetch } from "@/lib/api";
+
 
 const TIERS = [
   { name: "Free", price: "$0", limit: "3 purchases", tier: "free", color: "bg-zinc-100 text-zinc-600 border-zinc-200" },
@@ -41,9 +43,7 @@ export default function UserDashboard() {
 
   const fetchPurchases = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/my-purchases`, {
-        credentials: "include",
-      });
+      const res = await authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/my-purchases`);
       if (res.ok) setPurchases(await res.json());
     } catch {
     } finally {

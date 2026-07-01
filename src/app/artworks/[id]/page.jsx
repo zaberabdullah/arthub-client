@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { Card, Button } from "@heroui/react";
 import Link from "next/link";
+import { authFetch } from "@/lib/api";
 
 export default function ArtworkDetailsPage() {
   const { id } = useParams();
@@ -61,9 +62,7 @@ export default function ArtworkDetailsPage() {
 
   const checkCanComment = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/check/${id}`, {
-        credentials: "include",
-      });
+      const res = await authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/check/${id}`);
       if (res.ok) {
         const data = await res.json();
         setCanComment(data.hasPurchased);
@@ -108,9 +107,8 @@ const handleBuyNow = async () => {
     if (!confirm("Are you sure you want to delete this artwork?")) return;
     setDeleting(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks/${id}`, {
+      const res = await authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks/${id}`, {
         method: "DELETE",
-        credentials: "include",
       });
       if (!res.ok) throw new Error("Delete failed");
       router.push("/dashboard/artist");
@@ -127,10 +125,9 @@ const handleBuyNow = async () => {
     setError("");
     setSuccess("");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/comments`, {
+      const res = await authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ 
           artworkId: id, 
           comment: comment

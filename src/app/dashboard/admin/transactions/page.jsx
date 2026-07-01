@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { Card, Chip } from "@heroui/react";
+import { authFetch } from "@/lib/api";
 
 export default function AdminTransactionsPage() {
   const { data: session, isPending } = useSession();
@@ -21,9 +22,7 @@ export default function AdminTransactionsPage() {
 
   const fetchTransactions = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/all`, {
-        credentials: "include",
-      });
+     const res = await authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/all`);
       const data = await res.json();
       setTransactions(Array.isArray(data) ? data : []);
     } catch {

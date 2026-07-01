@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Card, Button, TextField, Label, InputGroup, Input } from "@heroui/react";
 import { useSession } from "@/lib/auth-client";
+import { authFetch } from "@/lib/api";
 
 const CATEGORIES = ["Painting", "Digital", "Sculpture", "Photography", "Drawing", "Other"];
 
@@ -70,12 +71,10 @@ export default function EditArtworkPage() {
       let finalImageUrl = imageUrl;
       if (imageFile) finalImageUrl = await uploadToImgBB(imageFile);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ title, description, price: Number(price), category, imageUrl: finalImageUrl }),
-      });
+  const res = await authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks/${id}`, {
+  method: "PATCH",
+  body: JSON.stringify({ title, description, price: Number(price), category, imageUrl: finalImageUrl }),
+});
 
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Failed to update artwork."); return; }

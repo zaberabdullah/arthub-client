@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Card } from "@heroui/react";
 import Link from "next/link";
+import { authFetch } from "@/lib/api";
 
 export default function AdminDashboard() {
   const { data: session, isPending } = useSession();
@@ -22,11 +23,11 @@ export default function AdminDashboard() {
 
   const fetchQuickStats = async () => {
     try {
-      const [usersRes, artworksRes, txRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users`, { credentials: "include" }),
-        fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks?limit=1`),
-        fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/all`, { credentials: "include" }),
-      ]);
+    const [usersRes, artworksRes, txRes] = await Promise.all([
+  authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users`),
+  fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks?limit=1`),
+  authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/all`),
+]);
       
       const users = usersRes.ok ? await usersRes.json() : [];
       const artworksData = artworksRes.ok ? await artworksRes.json() : { total: 0 };

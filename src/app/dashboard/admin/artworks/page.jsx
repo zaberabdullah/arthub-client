@@ -5,6 +5,7 @@ import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { Card, Button } from "@heroui/react";
 import Link from "next/link";
+import { authFetch } from "@/lib/api";
 
 export default function AdminArtworksPage() {
   const { data: session, isPending } = useSession();
@@ -43,10 +44,9 @@ export default function AdminArtworksPage() {
     setDeletingId(id);
     setError(""); setSuccess("");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
+    const res = await authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks/${id}`, {
+  method: "DELETE",
+});
       if (!res.ok) throw new Error("Delete failed.");
       setSuccess("Artwork deleted.");
       setArtworks((prev) => prev.filter((a) => a._id !== id));

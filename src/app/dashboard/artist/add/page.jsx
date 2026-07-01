@@ -49,8 +49,13 @@ export default function AddArtworkPage() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(""); setSuccess("");
+    e?.preventDefault();
+    setError("");
+    setSuccess("");
+   const res = await authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks`, {
+  method: "POST",
+  body: JSON.stringify({ title, description, price: Number(price), category, imageUrl }),
+});
 
     if (!title.trim()) return setError("Title is required.");
     if (!description.trim()) return setError("Description is required.");

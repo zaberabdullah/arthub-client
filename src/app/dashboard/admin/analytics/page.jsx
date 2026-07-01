@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { Card } from "@heroui/react";
+import { authFetch } from "@/lib/api";
+
+
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -28,11 +31,11 @@ export default function AdminAnalyticsPage() {
 
   const fetchStats = async () => {
     try {
-      const [usersRes, artworksRes, txRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users`, { credentials: "include" }),
-        fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks?limit=1000`),
-        fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/all`, { credentials: "include" }),
-      ]);
+    const [usersRes, artworksRes, txRes] = await Promise.all([
+  authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users`),
+  fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks?limit=1000`),
+  authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/all`),
+]);
 
       const users = usersRes.ok ? await usersRes.json() : [];
       const artworksData = artworksRes.ok ? await artworksRes.json() : { artworks: [] };

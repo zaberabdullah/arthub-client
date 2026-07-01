@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Card } from "@heroui/react";
 import Link from "next/link";
 import Image from "next/image";
+import { authFetch } from "@/lib/api";
 
 export default function MyCollectionPage() {
   const { data: session, isPending } = useSession();
@@ -19,7 +20,7 @@ export default function MyCollectionPage() {
       router.push("/auth/login");
       return;
     }
-    fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/my-purchases`, { credentials: "include" })
+    authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/my-purchases`)
       .then((r) => r.json())
       .then((d) => setPurchases(Array.isArray(d) ? d : []))
       .catch(() => {})

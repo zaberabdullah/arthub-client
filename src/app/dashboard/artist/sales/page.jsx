@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { Card } from "@heroui/react";
+import { authFetch } from "@/lib/api";
 
 export default function SalesHistoryPage() {
   const { data: session, isPending } = useSession();
@@ -17,12 +18,11 @@ export default function SalesHistoryPage() {
       router.push("/auth/login");
       return;
     }
-    fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/my-sales`, { credentials: "include" })
-      .then((r) => r.json())
-      .then((d) => setSales(Array.isArray(d) ? d : []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [session, isPending]);
+    authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/my-sales`)
+  .then((r) => r.json())
+  .then((d) => setSales(Array.isArray(d) ? d : []))
+  .catch(() => {})
+  .finally(() => setLoading(false));
 
   const totalRevenue = sales.reduce((sum, s) => sum + (s.amount || 0), 0);
 

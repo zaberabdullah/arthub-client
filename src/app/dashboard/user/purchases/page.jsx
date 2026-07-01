@@ -16,6 +16,12 @@ export default function PurchaseHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  const getToken = async () => {
+    const sessionRes = await fetch("/api/auth/get-session");
+    const sessionData = await sessionRes.json();
+    return sessionData?.session?.token;
+  };
+
   useEffect(() => {
     if (isPending) return;
     if (!session) {
@@ -25,30 +31,37 @@ export default function PurchaseHistoryPage() {
 
     if (sessionId) {
       setSaving(true);
-      fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/confirm-purchase`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ sessionId }),
-      })
-        .then((r) => r.json())
-        .then((data) => {
-          console.log("Purchase Confirmed:", data);
-          router.replace("/dashboard/user/purchases");
-          fetchPurchases();
+      getToken().then(token => {
+        fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/confirm-purchase`, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "x-session-token": token,
+          },
+          body: JSON.stringify({ sessionId }),
         })
-        .catch((err) => {
-          console.log("Confirm Error:", err);
-          setSaving(false);
-        });
+          .then((r) => r.json())
+          .then((data) => {
+            console.log("Purchase Confirmed:", data);
+            router.replace("/dashboard/user/purchases");
+            fetchPurchases();
+          })
+          .catch((err) => {
+            console.log("Confirm Error:", err);
+            setSaving(false);
+          });
+      });
     } else {
       fetchPurchases();
     }
   }, [session, isPending, sessionId]);
 
-  const fetchPurchases = () => {
+  const fetchPurchases = async () => {
+    const token = await getToken();
     fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/my-purchases`, {
-      credentials: "include",
+      headers: {
+        "x-session-token": token,
+      },
     })
       .then((r) => r.json())
       .then((d) => {
@@ -107,41 +120,21 @@ export default function PurchaseHistoryPage() {
               </thead>
               <tbody>
                 {purchases.map((p) => (
-                  <tr
-                    key={p._id}
-                    className="border-b border-zinc-50 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
-                  >
+                  <tr key={p._id} className="border-b border-zinc-50 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-900/50">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         {p.artworkImage && (
-                          <Image
-                            src={p.artworkImage}
-                            alt={p.artworkTitle}
-                            width={40}
-                            height={40}
-                            className="rounded-lg object-cover"
-                          />
+                          <Image src={p.artworkImage} alt={p.artworkTitle} width={40} height={40} className="rounded-lg object-cover" />
                         )}
-                        <Link
-                          href={`/artworks/${p.artworkId}`}
-                          className="font-medium text-zinc-900 dark:text-zinc-100 hover:text-violet-600"
-                        >
+                        <Link href={`/artworks/${p.artworkId}`} className="font-medium text-zinc-900 dark:text-zinc-100 hover:text-violet-600">
                           {p.artworkTitle || "—"}
                         </Link>
                       </div>
                     </td>
                     <td className="px-5 py-4 text-zinc-500">{p.artistName || "—"}</td>
-                    <td className="px-5 py-4 font-semibold text-violet-600">
-                      ${p.price?.toFixed(2) || '0.00'}
-                    </td>
+                    <td className="px-5 py-4 font-semibold text-violet-600">${p.price?.toFixed(2) || '0.00'}</td>
                     <td className="px-5 py-4 text-zinc-500">
-                      {p.purchaseDate
-                        ? new Date(p.purchaseDate).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })
-                        : "—"}
+                      {p.purchaseDate ? new Date(p.purchaseDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "—"}
                     </td>
                   </tr>
                 ))}

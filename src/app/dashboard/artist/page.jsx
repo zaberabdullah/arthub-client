@@ -5,6 +5,7 @@ import { useSession } from "@/lib/auth-client";
 import { Card, Button } from "@heroui/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { authFetch } from "@/lib/api"; // ← add করো
 
 export default function ArtistDashboard() {
   const { data: session, isPending } = useSession();
@@ -25,7 +26,7 @@ export default function ArtistDashboard() {
 
   const fetchMyArtworks = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks/my/list`, { credentials: "include" });
+      const res = await authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks/my/list`); // ← fix
       if (res.ok) setArtworks(await res.json());
     } catch (err) {
       console.error(err);
@@ -40,9 +41,8 @@ export default function ArtistDashboard() {
     setError("");
     setSuccess("");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks/${id}`, {
+      const res = await authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/artworks/${id}`, { // ← fix
         method: "DELETE",
-        credentials: "include",
       });
       if (!res.ok) throw new Error("Delete failed.");
       setSuccess("Artwork deleted.");

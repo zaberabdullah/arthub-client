@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { Card, Chip, Button } from "@heroui/react";
+import { authFetch } from "@/lib/api";
 
 export default function AdminUsersPage() {
   const { data: session, isPending } = useSession();
@@ -28,9 +29,7 @@ export default function AdminUsersPage() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users`, {
-        credentials: "include",
-      });
+      const res = await authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users`);
       const data = await res.json();
       setUsers(Array.isArray(data) ? data : []);
     } catch {
@@ -45,12 +44,10 @@ export default function AdminUsersPage() {
     setError(""); 
     setSuccess("");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/${userId}/role`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ role: newRole }),
-      });
+     const res = await authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/${userId}/role`, {
+  method: "PATCH",
+  body: JSON.stringify({ role: newRole }),
+});
       if (!res.ok) throw new Error("Failed to update role");
       setSuccess("Role updated successfully");
       setUsers(prev => prev.map(u => u._id === userId ? { ...u, role: newRole } : u));
