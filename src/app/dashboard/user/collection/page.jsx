@@ -16,10 +16,6 @@ export default function MyCollectionPage() {
 
   useEffect(() => {
     if (isPending) return;
-    if (!session) {
-      router.push("/auth/login");
-      return;
-    }
     authFetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/my-purchases`)
       .then((r) => r.json())
       .then((d) => setPurchases(Array.isArray(d) ? d : []))

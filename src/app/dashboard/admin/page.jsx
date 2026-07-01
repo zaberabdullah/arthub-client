@@ -14,10 +14,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (isPending) return;
-    if (!session || session.user?.role !== "admin") { 
-      router.push("/"); 
-      return; 
-    }
+   
     fetchQuickStats();
   }, [session, isPending]);
 
